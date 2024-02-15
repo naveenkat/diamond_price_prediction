@@ -1,1 +1,1 @@
-Machine Learning project
+diamond price prediction project

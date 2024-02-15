@@ -5,4 +5,7 @@ Author: naveen
 Author-email: kattanaveen483@gmail.com
 Requires-Dist: pandas
 Requires-Dist: numpy
+Requires-Dist: matplotlib
+Requires-Dist: seaborn
+Requires-Dist: scikit-learn
 Requires-Dist: flask
