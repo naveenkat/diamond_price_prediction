@@ -1,32 +1,74 @@
-import os,sys  
-import pandas as pd
+import sys
+import os
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
-from src.logger import logging
 from src.exception import CustomException
-from transformers import Pipeline,AutoTokenizer
-from transformers import AutoModelForSeq2SeqLM
+from src.logger import logging
+from src.utils import load_object
+import pandas as pd
+
 class PredictPipeline:
     def __init__(self):
         pass
-    def predict(self,text):
+
+    def predict(self,features):
         try:
-            tokenizer = AutoTokenizer.from_pretrained("C:\text_summarization_project\artifacts\pegasus-samsum-tokenizer")
-            gen_kwargs = {"length_penality" :0.8, "num_beams":8, "max_length":128}
-            model_j = AutoModelForSeq2SeqLM.from_pretrained("C:\text_summarization_project\artifacts\pegasus-samsum-model")
-            pipe = Pipeline("summarization",model = model_j,tokenizer = tokenizer)
-            print("dialogue")
-            print(text)
-            output = pipe(text,**gen_kwargs)[0]["summary_text"]
-            print("summary")
-            print(output)
-            return output
+            preprocessor_path=os.path.join('artifacts','preprocessor.pkl')
+            model_path=os.path.join('artifacts','model.pkl')
 
+            preprocessor=load_object(preprocessor_path)
+            model=load_object(model_path)
+
+            data_scaled=preprocessor.transform(features)
+
+            pred=model.predict(data_scaled)
+            return pred
             
 
-            
         except Exception as e:
-            logging.info("exception occured at predictpipeline file")
+            logging.info("Exception occured in prediction")
+            raise CustomException(e,sys)
+        
+class CustomData:
+    def __init__(self,
+                 carat:float,
+                 depth:float,
+                 table:float,
+                 x:float,
+                 y:float,
+                 z:float,
+                 cut:str,
+                 color:str,
+                 clarity:str):
+        
+        self.carat=carat
+        self.depth=depth
+        self.table=table
+        self.x=x
+        self.y=y
+        self.z=z
+        self.cut = cut
+        self.color = color
+        self.clarity = clarity
+
+    def get_data_as_dataframe(self):
+        try:
+            custom_data_input_dict = {
+                'carat':[self.carat],
+                'depth':[self.depth],
+                'table':[self.table],
+                'x':[self.x],
+                'y':[self.y],
+                'z':[self.z],
+                'cut':[self.cut],
+                'color':[self.color],
+                'clarity':[self.clarity]
+            }
+            df = pd.DataFrame(custom_data_input_dict)
+            logging.info('Dataframe Gathered')
+            return df
+        except Exception as e:
+            logging.info('Exception Occured in prediction pipeline')
             raise CustomException(e,sys)
 
-        
+
